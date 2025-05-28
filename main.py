@@ -34,3 +34,31 @@ async def generate_image(message: Message, prompt: str):
             await message.answer_photo(image_url)
         except Exception as e2:
             await message.answer("⚠️ Произошла ошибка при генерации изображения. Попробуйте снова.")
+
+async def recognize_text_from_image(image_url: str) -> str:
+    """
+    Распознаёт текст на изображении через OpenAI (g4f).
+    """
+    try:
+        response = g4f_client.images.ocr(
+            model="openai-ocr",  
+            image=image_url,
+        )
+        # Предполагается, что результат содержит поле 'text'
+        return response.text
+    except Exception as e:
+        return f"Ошибка распознавания текста: {e}"
+
+async def recognize_text_from_voice(audio_url: str) -> str:
+    """
+    Распознаёт текст из голосового сообщения (аудио) через OpenAI (g4f).
+    """
+    try:
+        response = g4f_client.audio.transcribe(
+            model="whisper-1",
+            audio=audio_url,
+        )
+        return response.text
+    except Exception as e:
+        return f"Ошибка распознавания речи: {e}"
+

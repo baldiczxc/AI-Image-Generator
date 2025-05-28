@@ -1,9 +1,8 @@
 from g4f.client import Client
-g4f_client = Client()
 from aiogram.types import Message
+g4f_client = Client()
 
-
-async def generate_image_with_flux_and_send(message: Message, prompt: str):
+async def generate_image(message: Message, prompt: str):
     """
     Генерация изображения: сначала через DALL-E, при ошибке — через Flux (flux-def).
     """
@@ -15,7 +14,7 @@ async def generate_image_with_flux_and_send(message: Message, prompt: str):
         response = g4f_client.images.generate(
             model="dall-e-3",
             prompt=prompt,
-            response_format="url"
+            response_format="url",
         )
         image_url = response.data[0].url
         if generating_message:

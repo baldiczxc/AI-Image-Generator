@@ -15,9 +15,6 @@
 ## Установка
 
 Установите зависимости:
-    ```
-    pip install -r requirements.txt
-    ```
     Минимальные зависимости:
     - openai
     - requests

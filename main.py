@@ -1,6 +1,13 @@
+# Как получить API-ключи:
+# HuggingFace: https://huggingface.co/settings/tokens (создайте токен, используйте его как hf_api_key)
+# OpenAI: https://platform.openai.com/api-keys (создайте токен, используйте его как openai.api_key)
+# Для других сервисов смотрите их официальные сайты и разделы "API" или "Tokens".
+
 from g4f.client import Client
 from aiogram.types import Message
 import openai
+import requests
+from huggingface_hub import InferenceClient
 
 g4f_client = Client()
 openai.api_key = "YOUR_OPENAI_API_KEY"  # Замените на ваш ключ
@@ -85,4 +92,42 @@ async def recognize_text_from_image_openai(image_path: str) -> str:
         return response.choices[0].message.content
     except Exception as e:
         return f"Ошибка распознавания текста с фото: {e}"
+
+async def remove_background_from_image(image_path: str, api_key: str) -> bytes:
+    """
+    Удаляет фон с изображения через remove.bg API.
+    Возвращает байты изображения с прозрачным фоном.
+    """
+    try:
+        with open(image_path, 'rb') as img_file:
+            response = requests.post(
+                'https://api.remove.bg/v1.0/removebg',
+                files={'image_file': img_file},
+                data={'size': 'auto'},
+                headers={'X-Api-Key': api_key},
+            )
+        if response.status_code == 200:
+            return response.content
+        else:
+            return f"Ошибка удаления фона: {response.status_code} {response.text}"
+    except Exception as e:
+        return f"Ошибка удаления фона: {e}"
+
+async def generate_video_from_text(prompt: str, hf_api_key: str = "API KEY huggingface") -> bytes:
+    """
+    Генерирует видео по тексту через HuggingFace InferenceClient (fal-ai, Lightricks/LTX-Video).
+    Возвращает байты видео.
+    """
+    try:
+        client = InferenceClient(
+            provider="fal-ai",
+            api_key=hf_api_key,
+        )
+        video = client.text_to_video(
+            prompt,
+            model="Lightricks/LTX-Video",
+        )
+        return video  # байты видеофайла
+    except Exception as e:
+        return f"Ошибка генерации видео через HuggingFace: {e}"
 

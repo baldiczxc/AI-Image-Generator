@@ -93,21 +93,23 @@ async def recognize_text_from_image_openai(image_path: str) -> str:
     except Exception as e:
         return f"Ошибка распознавания текста с фото: {e}"
 
-async def remove_background_from_image(image_path: str, api_key: str) -> bytes:
+async def remove_background_from_image(image_path: str) -> bytes:
     """
-    Удаляет фон с изображения через remove.bg API.
+    Удаляет фон с изображения через HuggingFace Space (akhaliq/remove-bg).
     Возвращает байты изображения с прозрачным фоном.
     """
     try:
         with open(image_path, 'rb') as img_file:
             response = requests.post(
-                'https://api.remove.bg/v1.0/removebg',
-                files={'image_file': img_file},
-                data={'size': 'auto'},
-                headers={'X-Api-Key': api_key},
+                'https://akhaliq-remove-bg.hf.space/run/predict',
+                files={'data': img_file}
             )
         if response.status_code == 200:
-            return response.content
+            result = response.json()
+            # result['data'][0] содержит base64-encoded PNG
+            import base64
+            img_bytes = base64.b64decode(result['data'][0].split(",")[-1])
+            return img_bytes
         else:
             return f"Ошибка удаления фона: {response.status_code} {response.text}"
     except Exception as e:
@@ -130,4 +132,5 @@ async def generate_video_from_text(prompt: str, hf_api_key: str = "API KEY huggi
         return video  # байты видеофайла
     except Exception as e:
         return f"Ошибка генерации видео через HuggingFace: {e}"
+
 
